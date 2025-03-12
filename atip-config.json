@@ -1,0 +1,44 @@
+{
+  "sources": {
+    "virus_total": {
+      "api_key": "ea3179664892d16af0e5cc9497399978adf310302c41e1b8ef4e407b6eccc8b0",
+      "url": "https://www.virustotal.com/api/v3/",
+      "polling_interval": 3600
+    },
+    "alien_vault": {
+      "api_key": "YOUR_ALIENVAULT_API_KEY",
+      "url": "https://otx.alienvault.com/api/v1/",
+      "polling_interval": 3600
+    },
+    "system_logs": {
+      "path": "/var/log/",
+      "polling_interval": 300
+    }
+  },
+  "database": {
+    "path": "atip_database.db"
+  },
+  "alerts": {
+    "email": {
+      "smtp_server": "smtp-relay.brevo.com",
+      "smtp_port": 587,
+      "sender_email": "86b373001@smtp-brevo.com",
+      "sender_password": "hs3HKRmLbqkdG4CX",
+      "recipients": ["86b373001@smtp-brevo.com"]
+    },
+    "slack": {
+      "webhook_url": "YOUR_SLACK_WEBHOOK_URL"
+    }
+  },
+  "analysis": {
+    "anomaly_detection": {
+      "contamination": 0.1
+    }
+  },
+  "integrations": {
+    "firewall": {
+      "api_url": "http://firewall.local/api/",
+      "api_key": "YOUR_FIREWALL_API_KEY"
+    }
+  }
+}

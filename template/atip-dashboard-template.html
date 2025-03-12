@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATIP Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #f1f4f9;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-card .label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        .severity-1-3 { background-color: #d4edda; }
+        .severity-4-6 { background-color: #fff3cd; }
+        .severity-7-8 { background-color: #ffe5d0; }
+        .severity-9-10 { background-color: #f8d7da; }
+        .threat-indicator {
+            font-family: monospace;
+        }
+        .chart-container {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shield-lock"></i> ATIP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#threats">Threats</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#alerts">Alerts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reports">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#settings">Settings</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button id="scan-button" class="btn btn-outline-light">
+                            <i class="bi bi-search"></i> Manual Scan
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Threat Intelligence Dashboard</h1>
+        <p class="text-muted">Real-time insights and analytics from your threat intelligence platform.</p>
+        
+        <!-- Stats Overview -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="icon text-primary">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </div>
+                    <div class="number" id="total-threats">--</div>
+                    <div class="label">Active Threats (24h)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="icon text-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="number" id="high-severity-threats">--</div>
+                    <div class="label">High Severity (24h)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="icon text-info">
+                        <i class="bi bi-bell"></i>
+                    </div>
+                    <div class="number" id="total-alerts">--</div>
+                    <div class="label">Alerts Generated (24h)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="icon text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="number" id="total-actions">--</div>
+                    <div class="label">Actions Taken (24h)</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Threat Distribution</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="threatChartDropdown" data-bs-toggle="dropdown">
+                                Last 24 Hours
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="threatChartDropdown">
+                                <li><a class="dropdown-item" href="#">Last 24 Hours</a></li>
+                                <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                                <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="threat-distribution-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Threat Severity Trends</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="severityChartDropdown" data-bs-toggle="dropdown">
+                                Last 7 Days
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="severityChartDropdown">
+                                <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                                <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                                <li><a class="dropdown-item" href="#">Last Quarter</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="severity-trend-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Threat Feed -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Threats</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" id="refresh-threats">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" id="filter-threats">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Severity</th>
+                                        <th>Threat Type</th>
+                                        <th>Indicator</th>
+                                        <th>First Seen</th>
+                                        <th>Last Seen</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="threat-feed">
+                                    <!-- Threat data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts and Intelligence -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Alerts</h5>
+                        <span class="badge bg-danger" id="new-alerts-badge">New</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="alerts-list">
+                            <!-- Alert items will be populated here -->
+                        </div>
+                        <div class="d-grid gap-2 mt-3">
+                            <button class="btn btn-outline-primary" id="load-more-alerts">Load More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Threat Intelligence Feed</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="intel-feed">
+                            <!-- Intelligence items will be populated here -->
+                        </div>
+                        <div class="d-grid gap-2 mt-3">
+                            <button class="btn btn-outline-primary" id="load-more-intel">Load More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Threat Map -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Global Threat Map</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="threat-map" style="height: 400px;">
+                            <!-- Map will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="row mt-4 mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">System Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <i class="bi bi-database text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Database</h6>
+                                        <span class="badge bg-success">Online</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <i class="bi bi-hdd-network text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">API Services</h6>
+                                        <span class="badge bg-success">Online</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <i class="bi bi-cloud-check text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Cloud Services</h6>
+                                        <span class="badge bg-success">Online</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <i class="bi bi-clock-history text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">Last Update</h6>
+                                        <small class="text-muted" id="last-update-time">Just now</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Threat Details -->
+    <div class="modal fade" id="threatDetailsModal" tabindex="-1" aria-labelledby="threatDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="threatDetailsModalLabel">Threat Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="threat-details-content">
+                    <!-- Threat details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="mitigate-threat-btn">Mitigate Threat</button>
+                </div>
+            </div>
