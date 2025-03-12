@@ -1,7 +1,7 @@
 {
   "sources": {
     "virus_total": {
-      "api_key": "ea3179664892d16af0e5cc9497399978adf310302c41e1b8ef4e407b6eccc8b0",
+      "api_key": "YOUR_VIRUSTOTAL_API_KEY",
       "url": "https://www.virustotal.com/api/v3/",
       "polling_interval": 3600
     },
@@ -20,11 +20,11 @@
   },
   "alerts": {
     "email": {
-      "smtp_server": "smtp-relay.brevo.com",
+      "smtp_server": "smtp.gmail.com",
       "smtp_port": 587,
-      "sender_email": "86b373001@smtp-brevo.com",
-      "sender_password": "hs3HKRmLbqkdG4CX",
-      "recipients": ["86b373001@smtp-brevo.com"]
+      "sender_email": "your_email@gmail.com",
+      "sender_password": "your_app_password",
+      "recipients": ["security_team@example.com"]
     },
     "slack": {
       "webhook_url": "YOUR_SLACK_WEBHOOK_URL"
