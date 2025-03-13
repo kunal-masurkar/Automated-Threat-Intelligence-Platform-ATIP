@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts - Threat Intelligence Platform</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+        }
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        .alert-card {
+            transition: all 0.3s ease;
+        }
+        .alert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .alert-high {
+            border-left: 5px solid #dc3545;
+        }
+        .alert-medium {
+            border-left: 5px solid #fd7e14;
+        }
+        .alert-low {
+            border-left: 5px solid #28a745;
+        }
+        .alert-status-new {
+            background-color: #f8f9fa;
+        }
+        .alert-status-acknowledged {
+            background-color: #e2f0fd;
+        }
+        .alert-status-resolved {
+            background-color: #d1e7dd;
+        }
+        .severity-badge {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <h5 class="text-center mb-4">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        ATIP
+                    </h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="dashboard.html" class="nav-link">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="alerts.html" class="nav-link active">
+                                <i class="fas fa-bell me-2"></i>
+                                Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="threats.html" class="nav-link">
+                                <i class="fas fa-bug me-2"></i>
+                                Threats
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="reports.html" class="nav-link">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Reports
+                            </a>
+                        </li>
+                        <li class="nav-item mt-5">
+                            <a href="settings.html" class="nav-link">
+                                <i class="fas fa-cog me-2"></i>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Alerts Management</h2>
+                    <div>
+                        <button class="btn btn-outline-secondary" id="refresh-btn">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="filter-section mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="severity-filter" class="form-label">Severity</label>
+                            <select class="form-select" id="severity-filter">
+                                <option value="">All Severities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status-filter" class="form-label">Status</label>
+                            <select class="form-select" id="status-filter">
+                                <option value="">All Statuses</option>
+                                <option value="new">New</option>
+                                <option value="acknowledged">Acknowledged</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date-filter" class="form-label">Time Range</label>
+                            <select class="form-select" id="date-filter">
+                                <option value="24h">Last 24 Hours</option>
+                                <option value="7d">Last 7 Days</option>
+                                <option value="30d">Last 30 Days</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="apply-filters-btn">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center p-3">
+                            <h3 id="total-alerts-count">0</h3>
+                            <p class="text-muted mb-0">Total Alerts</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 text-danger">
+                            <h3 id="high-alerts-count">0</h3>
+                            <p class="text-muted mb-0">High Severity</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 text-warning">
+                            <h3 id="medium-alerts-count">0</h3>
+                            <p class="text-muted mb-0">Medium Severity</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center p-3 text-success">
+                            <h3 id="low-alerts-count">0</h3>
+                            <p class="text-muted mb-0">Low Severity</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts List -->
+                <div class="row" id="alerts-container">
+                    <!-- Alert cards will be populated here by JavaScript -->
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Alerts pagination" class="mt-4">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Detail Modal -->
+    <div class="modal fade" id="alertDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alert Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="alert-id-section">
+                                <strong>Alert ID:</strong> <span id="modal-alert-id"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="badge bg-danger" id="modal-severity">High</span>
+                            <span class="badge bg-light text-dark" id="modal-status">New</span>
+                            <span class="badge bg-secondary" id="modal-date">2023-05-15 14:30</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5 id="modal-title">Alert Title</h5>
+                        <p id="modal-description">Alert description goes here...</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">Affected Assets</div>
+                                <div class="card-body">
+                                    <ul id="modal-assets">
+                                        <!-- Populated by JavaScript -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">Indicators</div>
+                                <div class="card-body">
+                                    <ul id="modal-indicators">
+                                        <!-- Populated by JavaScript -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="card">
+                            <div class="card-header">Recommended Actions</div>
+                            <div class="card-body">
+                                <ol id="modal-actions">
+                                    <!-- Populated by JavaScript -->
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="modal-notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="acknowledge-btn">Acknowledge</button>
+                    <button type="button" class="btn btn-success" id="resolve-btn">Mark as Resolved</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Sample alert data (in a real application, this would be fetched from the backend)
+        const sampleAlerts = [
+            {
+                id: 'ALT-001',
+                title: 'Suspicious Login Activity Detected',
+                description: 'Multiple failed login attempts from unusual IP address detected for user admin.',
+                severity: 'high',
+                status: 'new',
+                timestamp: '2023-05-15T14:30:00',
+                assets: ['192.168.1.5', 'admin@company.com', 'Authentication Server'],
+                indicators: ['45.67.89.123', 'Brute Force Pattern', 'Outside Business Hours'],
+                actions: [
+                    'Verify if login attempts were legitimate',
+                    'Reset user password if suspicious',
+                    'Enable additional verification for account'
+                ]
+            },
+            {
+                id: 'ALT-002',
+                title: 'Malware Detected on Endpoint',
+                description: 'Trojan horse malware detected on marketing department endpoint. Quarantined by antivirus.',
+                severity: 'high',
+                status: 'acknowledged',
+                timestamp: '2023-05-15T12:15:00',
+                assets: ['DESKTOP-MKT003', 'user.smith@company.com', 'Marketing Department'],
+                indicators: ['Trojan.GenericKD.45678901', 'C2 Communication Attempt', 'Unusual Process Behavior'],
+                actions: [
+                    'Verify quarantine status',
+                    'Run full system scan',
+                    'Check for lateral movement',
+                    'Investigate infection vector'
+                ]
+            },
+            {
+                id: 'ALT-003',
+                title: 'Unusual Data Transfer',
+                description: 'Large data transfer detected to external IP address from engineering workstation.',
+                severity: 'medium',
+                status: 'new',
+                timestamp: '2023-05-15T11:20:00',
+                assets: ['DESKTOP-ENG007', 'john.doe@company.com', 'Engineering Department'],
+                indicators: ['1.2GB Data Transfer', '78.90.12.34 (Unclassified IP)', 'After Hours Activity'],
+                actions: [
+                    'Contact user to verify legitimacy',
+                    'Review data transfer logs',
+                    'Temporarily restrict external transfers if suspicious'
+                ]
+            },
+            {
+                id: 'ALT-004',
+                title: 'SSL Certificate Expiring',
+                description: 'SSL Certificate for company.com will expire in 7 days.',
+                severity: 'low',
+                status: 'new',
+                timestamp: '2023-05-15T09:45:00',
+                assets: ['company.com', 'Web Server'],
+                indicators: ['Certificate Expiry: 2023-05-22'],
+                actions: [
+                    'Renew SSL certificate',
+                    'Update certificate in server configuration',
+                    'Verify certificate deployment'
+                ]
+            },
+            {
+                id: 'ALT-005',
+                title: 'Phishing Campaign Detected',
+                description: 'Multiple users received similar phishing emails claiming to be from IT department.',
+                severity: 'medium',
+                status: 'resolved',
+                timestamp: '2023-05-14T16:30:00',
+                assets: ['Email System', 'Multiple Users'],
+                indicators: ['Subject: "Urgent: Password Reset Required"', 'Sender: it-noreply@company-support.net', 'Link to phishing site'],
+                actions: [
+                    'Block sender domain in email gateway',
+                    'Check for users who clicked links',
+                    'Send company-wide awareness notice',
+                    'Reset passwords for affected users'
+                ]
+            },
+            {
+                id: 'ALT-006',
+                title: 'Vulnerable Software Detected',
+                description: 'Outdated version of Apache Log4j detected with known vulnerability CVE-2021-44228.',
+                severity: 'high',
+                status: 'new',
+                timestamp: '2023-05-14T13:15:00',
+                assets: ['APP-SERVER-003', 'Customer Portal Application'],
+                indicators: ['Log4j version 2.14.1', 'CVE-2021-44228 (CVSS: 10.0)'],
+                actions: [
+                    'Update Log4j to latest version',
+                    'Apply recommended mitigations',
+                    'Verify no exploitation attempts',
+                    'Restart affected services'
+                ]
+            }
+        ];
+        
+        // Initialize alert detail modal
+        const alertDetailModal = new bootstrap.Modal(document.getElementById('alertDetailModal'));
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load alerts
+            loadAlerts(sampleAlerts);
+            updateAlertCounts(sampleAlerts);
+            
+            // Set up event listeners
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                // In a real app, this would fetch new data from the server
+                loadAlerts(sampleAlerts);
+                updateAlertCounts(sampleAlerts);
+            });
+            
+            document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
+            
+            document.getElementById('acknowledge-btn').addEventListener('click', acknowledgeAlert);
+            document.getElementById('resolve-btn').addEventListener('click', resolveAlert);
+        });
+        
+        // Load alerts into the container
+        function loadAlerts(alerts) {
+            const container = document.getElementById('alerts-container');
+            container.innerHTML = '';
+            
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            No alerts found matching your criteria.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            alerts.forEach(alert => {
+                const alertCard = document.createElement('div');
+                alertCard.className = 'col-md-6 mb-4';
+                
+                // Determine severity and status classes
+                let severityClass = 'alert-low';
+                let severityBadgeClass = 'bg-success';
+                let statusClass = 'alert-status-new';
+                
+                if (alert.severity === 'high') {
+                    severityClass = 'alert-high';
+                    severityBadgeClass = 'bg-danger';
+                } else if (alert.severity === 'medium') {
+                    severityClass = 'alert-medium';
+                    severityBadgeClass = 'bg-warning';
+                }
+                
+                if (alert.status === 'acknowledged') {
+                    statusClass = 'alert-status-acknowledged';
+                } else if (alert.status === 'resolved') {
+                    statusClass = 'alert-status-resolved';
+                }
+                
+                // Format timestamp
+                const timestamp = new Date(alert.timestamp);
+                const formattedTime = timestamp.toLocaleString();
+                
+                alertCard.innerHTML = `
+                    <div class="card alert-card ${severityClass} ${statusClass}" data-alert-id="${alert.id}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title mb-0">${alert.title}</h5>
+                                <span class="severity-badge ${severityBadgeClass}">${alert.severity.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <p class="card-text">${alert.description}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">${formattedTime}</small>
+                                <div>
+                                    <span class="badge bg-secondary">${alert.status}</span>
+                                    <button class="btn btn-sm btn-outline-primary view-details-btn">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(alertCard);
+                
+                // Add event listener to view details button
+                const viewBtn = alertCard.querySelector('.view-details-btn');
+                viewBtn.addEventListener('click', () => {
+                    showAlertDetails(alert);
+                });
+            });
+        }
+        
+        // Update alert counts
+        function updateAlertCounts(alerts) {
+            document.getElementById('total-alerts-count').textContent = alerts.length;
+            
+            const highCount = alerts.filter(alert => alert.severity === 'high').length;
+            const mediumCount = alerts.filter(alert => alert.severity === 'medium').length;
+            const lowCount = alerts.filter(alert => alert.severity === 'low').length;
+            
+            document.getElementById('high-alerts-count').textContent = highCount;
+            document.getElementById('medium-alerts-count').textContent = mediumCount;
+            document.getElementById('low-alerts-count').textContent = lowCount;
+        }
+        
+        // Show alert details in modal
+        function showAlertDetails(alert) {
+            // Set modal content
+            document.getElementById('modal-alert-id').textContent = alert.id;
+            document.getElementById('modal-title').textContent = alert.title;
+            document.getElementById('modal-description').textContent = alert.description;
+            
+            // Set severity badge
+            const severityBadge = document.getElementById('modal-severity');
+            severityBadge.textContent = alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1);
+            
+            if (alert.severity === 'high') {
+                severityBadge.className = 'badge bg-danger';
+            } else if (alert.severity === 'medium') {
+                severityBadge.className = 'badge bg-warning text-dark';
+            } else {
+                severityBadge.className = 'badge bg-success';
+            }
+            
+            // Set status badge
+            const statusBadge = document.getElementById('modal-status');
+            statusBadge.textContent = alert.status.charAt(0).toUpperCase() + alert.status.slice(1);
+            
+            if (alert.status === 'new') {
+                statusBadge.className = 'badge bg-light text-dark';
+            } else if (alert.status === 'acknowledged') {
+                statusBadge.className = 'badge bg-info';
+            } else {
+                statusBadge.className = 'badge bg-success';
+            }
+            
+            // Set date
+            document.getElementById('modal-date').textContent = new Date(alert.timestamp).toLocaleString();
+            
+            // Set assets
+            const assetsList = document.getElementById('modal-assets');
+            assetsList.innerHTML = '';
+            alert.assets.forEach(asset => {
+                const li = document.createElement('li');
+                li.textContent = asset;
+                assetsList.appendChild(li);
+            });
+            
+            // Set indicators
+            const indicatorsList = document.getElementById('modal-indicators');
+            indicatorsList.innerHTML = '';
+            alert.indicators.forEach(indicator => {
+                const li = document.createElement('li');
+                li.textContent = indicator;
+                indicatorsList.appendChild(li);
+            });
+            
+            // Set actions
+            const actionsList = document.getElementById('modal-actions');
+            actionsList.innerHTML = '';
+            alert.actions.forEach(action => {
+                const li = document.createElement('li');
+                li.textContent = action;
+                actionsList.appendChild(li);
+            });
+            
+            // Clear notes
+            document.getElementById('modal-notes').value = '';
+            
+            // Update button states based on alert status
+            const acknowledgeBtn = document.getElementById('acknowledge-btn');
+            const resolveBtn = document.getElementById('resolve-btn');
+            
+            if (alert.status === 'new') {
+                acknowledgeBtn.disabled = false;
+                resolveBtn.disabled = false;
+            } else if (alert.status === 'acknowledged') {
+                acknowledgeBtn.disabled = true;
+                resolveBtn.disabled = false;
+            } else {
+                acknowledgeBtn.disabled = true;
+                resolveBtn.disabled = true;
+            }
+            
+            // Store alert ID in buttons for reference
+            acknowledgeBtn.dataset.alertId = alert.id;
+            resolveBtn.dataset.alertId = alert.id;
+            
+            // Show modal
+            alertDetailModal.show();
+        }
+        
+        // Apply filters to alerts
+        function applyFilters() {
+            const severityFilter = document.getElementById('severity-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+            
+            // In a real app, this would send a request to the server with filters
+            let filteredAlerts = [...sampleAlerts];
+            
+            if (severityFilter) {
+                filteredAlerts = filteredAlerts.filter(alert => alert.severity === severityFilter);
+            }
+            
+            if (statusFilter) {
+                filteredAlerts = filteredAlerts.filter(alert => alert.status === statusFilter);
+            }
+            
+            // Date filtering (simulated - in a real app would be done on the server)
+            if (dateFilter !== 'all') {
+                const now = new Date();
+                let cutoff;
+                
+                if (dateFilter === '24h') {
+                    cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                } else if (dateFilter === '7d') {
+                    cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                } else if (dateFilter === '30d') {
+                    cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                }
+                
+                filteredAlerts = filteredAlerts.filter(alert => new Date(alert.timestamp) >= cutoff);
+            }
+            
+            loadAlerts(filteredAlerts);
+            updateAlertCounts(filteredAlerts);
+        }
+        
+        // Acknowledge alert
+        function acknowledgeAlert() {
+            const alertId = this.dataset.alertId;
+            
+            // In a real app, this would send a request to the server
+            // For demo purposes, we'll just update the sample data
+            const alertIndex = sampleAlerts.findIndex(alert => alert.id === alertId);
+            if (alertIndex !== -1) {
+                sampleAlerts[alertIndex].status = 'acknowledged';
+                
+                // Update UI
+                applyFilters(); // Re-apply current filters
+                alertDetailModal.hide();
+            }
+        }
+        
+        // Resolve alert
+        function resolveAlert() {
+            const alertId = this.dataset.alertId;
+            
+            // In a real app, this would send a request to the server
+            // For demo purposes, we'll just update the sample data
+            const alertIndex = sampleAlerts.findIndex(alert => alert.id === alertId);
+            if (alertIndex !== -1) {
+                sampleAlerts[alertIndex].status = 'resolved';
+                
+                // Update UI
+                applyFilters(); // Re-apply current filters
+                alertDetailModal.hide();
+            }
+        }
+    </script>
+</body>
+</html>
