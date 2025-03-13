@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threats Management - Threat Intelligence Platform</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.3/css/dataTables.bootstrap5.min.css">
+    <!-- Custom CSS -->
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+        }
+        .sidebar {
+            background-color: #343a40;
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .severity-badge {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            margin-right: 0.2rem;
+            margin-bottom: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <h5 class="text-center mb-4">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        ATIP
+                    </h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="/" class="nav-link">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/alerts" class="nav-link">
+                                <i class="fas fa-bell me-2"></i>
+                                Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/threats" class="nav-link active">
+                                <i class="fas fa-radiation me-2"></i>
+                                Threats
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/reports" class="nav-link">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/settings" class="nav-link">
+                                <i class="fas fa-cog me-2"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li class="nav-item mt-5">
+                            <a href="/logout" class="nav-link">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <h2 class="mb-4">Threat Management</h2>
+                
+                <!-- Filters -->
+                <div class="filter-section">
+                    <h5 class="mb-3">Filter Threats</h5>
+                    <form id="threatFilterForm">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="severityFilter" class="form-label">Minimum Severity</label>
+                                <select class="form-select" id="severityFilter">
+                                    <option value="">All</option>
+                                    <option value="1">1+</option>
+                                    <option value="3">3+</option>
+                                    <option value="5">5+</option>
+                                    <option value="7">7+</option>
+                                    <option value="9">9+</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="sourceFilter" class="form-label">Source</label>
+                                <select class="form-select" id="sourceFilter">
+                                    <option value="">All</option>
+                                    <option value="OSINT">OSINT</option>
+                                    <option value="INTERNAL">Internal</option>
+                                    <option value="COMMERCIAL">Commercial</option>
+                                    <option value="COMMUNITY">Community</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="typeFilter" class="form-label">Threat Type</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option value="">All</option>
+                                    <option value="MALWARE">Malware</option>
+                                    <option value="PHISHING">Phishing</option>
+                                    <option value="VULNERABILITY">Vulnerability</option>
+                                    <option value="APT">APT</option>
+                                    <option value="BOTNET">Botnet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="timeFilter" class="form-label">Time Period</label>
+                                <select class="form-select" id="timeFilter">
+                                    <option value="1">Last 24 Hours</option>
+                                    <option value="7" selected>Last 7 Days</option>
+                                    <option value="30">Last 30 Days</option>
+                                    <option value="90">Last 90 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" id="resetFilters" class="btn btn-secondary me-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <i class="fas fa-bolt me-2"></i> Quick Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#blockIndicatorModal">
+                                    <i class="fas fa-ban me-2"></i> Block Indicator
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-info w-100 mb-2" id="refreshThreatsBtn">
+                                    <i class="fas fa-sync me-2"></i> Refresh Data
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-success w-100 mb-2" id="exportDataBtn">
+                                    <i class="fas fa-file-export me-2"></i> Export Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Threats Table -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-radiation me-2"></i> Detected Threats
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span id="threatCount" class="badge bg-danger me-2">0</span>
+                                <button class="btn btn-sm btn-outline-secondary" id="toggleTableView">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="threatsTable" class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Severity</th>
+                                        <th>Type</th>
+                                        <th>Source</th>
+                                        <th>Indicator</th>
+                                        <th>Description</th>
+                                        <th>Timestamp</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="threatsTableBody">
+                                    <!-- Table data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Block Indicator Modal -->
+    <div class="modal fade" id="blockIndicatorModal" tabindex="-1" aria-labelledby="blockIndicatorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blockIndicatorModalLabel">Block Indicator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="blockIndicatorForm">
+                        <div class="mb-3">
+                            <label for="indicatorType" class="form-label">Indicator Type</label>
+                            <select class="form-select" id="indicatorType" required>
+                                <option value="">Select Type</option>
+                                <option value="ip">IP Address</option>
+                                <option value="url">URL</option>
+                                <option value="domain">Domain</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="indicatorValue" class="form-label">Indicator Value</label>
+                            <input type="text" class="form-control" id="indicatorValue" placeholder="Enter indicator value" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="blockReason" class="form-label">Reason</label>
+                            <textarea class="form-control" id="blockReason" rows="3" placeholder="Enter reason for blocking"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmBlockBtn">Block</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Threat Details Modal -->
+    <div class="modal fade" id="threatDetailsModal" tabindex="-1" aria-labelledby="threatDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="threatDetailsModalLabel">Threat Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="threatDetailsContent">
+                    <!-- Threat details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="takeActionBtn">Take Action</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.3/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            const threatsTable = $('#threatsTable').DataTable({
+                order: [[1, 'desc']], // Order by severity desc
+                language: {
+                    search: "Search threats:",
+                    lengthMenu: "Show _MENU_ threats per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ threats",
+                    emptyTable: "No threats available"
+                }
+            });
+            
+            // Function to load threats
+            function loadThreats() {
+                const severity = $('#severityFilter').val();
+                const source = $('#sourceFilter').val();
+                const type = $('#typeFilter').val();
+                const days = $('#timeFilter').val();
+                
+                $.ajax({
+                    url: '/api/threats',
+                    type: 'GET',
+                    data: {
+                        severity: severity,
+                        source: source,
+                        type: type,
+                        days: days
+                    },
+                    success: function(data) {
+                        threatsTable.clear();
+                        
+                        // Update threat count
+                        $('#threatCount').text(data.length);
+                        
+                        // Add rows to the table
+                        data.forEach(function(threat) {
+                            const severityColor = getSeverityColor(threat.severity);
+                            const severityBadge = `<span class="severity-badge" style="background-color: ${severityColor};">${threat.severity}</span>`;
+                            
+                            // Type tag
+                            const typeTag = `<span class="tag bg-secondary">${threat.threat_type}</span>`;
+                            
+                            // Format timestamp
+                            const timestamp = new Date(threat.timestamp).toLocaleString();
+                            
+                            // Add row to table
+                            threatsTable.row.add([
+                                threat.id,
+                                severityBadge,
+                                typeTag,
+                                threat.source,
+                                threat.indicator,
+                                threat.description.substring(0, 50) + (threat.description.length > 50 ? '...' : ''),
+                                timestamp,
+                                `<div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary view-details" data-id="${threat.id}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger block-indicator" data-indicator="${threat.indicator}" data-type="${getIndicatorType(threat.indicator)}">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </div>`
+                            ]);
+                        });
+                        
+                        threatsTable.draw();
+                        bindEventHandlers();
+                    },
+                    error: function(error) {
+                        console.error('Error loading threats:', error);
+                        alert('Failed to load threats. Please try again.');
+                    }
+                });
+            }
+            
+            // Function to determine indicator type
+            function getIndicatorType(indicator) {
+                if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(indicator)) {
+                    return 'ip';
+                } else if (indicator.startsWith('http')) {
+                    return 'url';
+                } else {
+                    return 'domain';
+                }
+            }
+            
+            // Function to get severity color
+            function getSeverityColor(severity) {
+                if (severity >= 9) return '#d9534f'; // Danger
+                if (severity >= 7) return '#f0ad4e'; // Warning
+                if (severity >= 5) return '#5bc0de'; // Info
+                if (severity >= 3) return '#5cb85c'; // Success
+                return '#777777'; // Default
+            }
+            
+            // Bind event handlers
+            function bindEventHandlers() {
+                // View threat details
+                $('.view-details').on('click', function() {
+                    const threatId = $(this).data('id');
+                    // Here you would fetch threat details and populate the modal
+                    $('#threatDetailsModal').modal('show');
+                });
+                
+                // Block indicator
+                $('.block-indicator').on('click', function() {
+                    const indicator = $(this).data('indicator');
+                    const type = $(this).data('type');
+                    
+                    $('#indicatorType').val(type);
+                    $('#indicatorValue').val(indicator);
+                    $('#blockIndicatorModal').modal('show');
+                });
+            }
+            
+            // Submit block indicator form
+            $('#confirmBlockBtn').on('click', function() {
+                const type = $('#indicatorType').val();
+                const indicator = $('#indicatorValue').val();
+                const reason = $('#blockReason').val();
+                
+                if (!type || !indicator) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/api/actions/block',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        type: type,
+                        indicator: indicator,
+                        reason: reason
+                    }),
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Indicator blocked successfully.');
+                            $('#blockIndicatorModal').modal('hide');
+                            loadThreats();
+                        } else {
+                            alert('Failed to block indicator: ' + response.message);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error blocking indicator:', error);
+                        alert('Failed to block indicator. Please try again.');
+                    }
+                });
+            });
+            
+            // Filter form submission
+            $('#threatFilterForm').on('submit', function(e) {
+                e.preventDefault();
+                loadThreats();
+            });
+            
+            // Reset filters
+            $('#resetFilters').on('click', function() {
+                $('#severityFilter').val('');
+                $('#sourceFilter').val('');
+                $('#typeFilter').val('');
+                $('#timeFilter').val('7');
+                loadThreats();
+            });
+            
+            // Refresh threats
+            $('#refreshThreatsBtn').on('click', function() {
+                loadThreats();
+            });
+            
+            // Export data
+            $('#exportDataBtn').on('click', function() {
+                // Here you would implement export functionality
+                alert('Export functionality will be implemented here.');
+            });
+            
+            // Initial load
+            loadThreats();
+        });
+    </script>
+</body>
+</html>
