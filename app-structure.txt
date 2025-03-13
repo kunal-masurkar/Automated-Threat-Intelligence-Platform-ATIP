@@ -1,0 +1,55 @@
+ATIP - Automated Threat Intelligence Platform
+│
+├── atip-main.py                  # Main command-line interface
+├── atip-web-interface.py         # Web interface server
+├── atip_core.py                  # Core platform functionality
+├── config.json                   # Configuration file
+├── database_schema.sql           # Database schema definition
+├── init_database.py              # Database initialization script
+├── requirements.txt              # Python dependencies
+│
+├── templates/                    # Web interface templates
+│   ├── dashboard.html            # Main dashboard
+│   ├── alerts.html               # Alerts page
+│   ├── threats.html              # Threats management
+│   ├── reports.html              # Reports generation
+│   ├── settings.html             # Platform settings
+│   └── login.html                # Login page
+│
+├── static/                       # Web interface static files
+│   ├── css/                      # Stylesheets
+│   ├── js/                       # JavaScript files
+│   └── img/                      # Images
+│
+├── modules/                      # Platform modules
+│   ├── collectors/               # Threat data collection modules
+│   │   ├── api_collector.py      # API-based intelligence collection
+│   │   ├── feed_collector.py     # Feed-based intelligence collection
+│   │   └── scanner_collector.py  # Scanner-based intelligence collection
+│   │
+│   ├── analyzers/                # Threat analysis modules
+│   │   ├── correlation.py        # Correlation analysis
+│   │   ├── reputation.py         # Reputation analysis
+│   │   └── trending.py           # Trend analysis
+│   │
+│   ├── actions/                  # Response action modules
+│   │   ├── firewall.py           # Firewall integration
+│   │   ├── proxy.py              # Proxy integration
+│   │   └── dns.py                # DNS blocking integration
+│   │
+│   └── alerts/                   # Alert modules
+│       ├── email_alerts.py       # Email alerting
+│       ├── slack_alerts.py       # Slack alerting
+│       └── sms_alerts.py         # SMS alerting
+│
+├── utils/                        # Utility functions
+│   ├── database.py               # Database utilities
+│   ├── config.py                 # Configuration utilities
+│   ├── logging.py                # Logging utilities
+│   └── validator.py              # Data validation utilities
+│
+└── tests/                        # Unit and integration tests
+    ├── test_collectors.py        # Tests for collectors
+    ├── test_analyzers.py         # Tests for analyzers
+    ├── test_actions.py           # Tests for actions
+    └── test_web.py               # Tests for web interface
